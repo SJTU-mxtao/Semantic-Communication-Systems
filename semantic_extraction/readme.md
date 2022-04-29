@@ -29,23 +29,23 @@ $ python CIFAR.py
 
 ## Some Results
 
-With ![](http://latex.codecogs.com/svg.latex?\\lambda=0.1): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_1.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=0.1): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_1.000000.jpg)  
 
-With $\lambda = 0.2$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_2.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=0.2): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_2.000000.jpg)  
 
-With $\lambda = 0.3$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_3.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=0.3): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_3.000000.jpg)  
 
-With $\lambda = 0.4$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_4.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=0.4): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_4.000000.jpg)  
 
-With $\lambda = 0.5$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_5.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=0.5): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_5.000000.jpg)  
 
-With $\lambda = 0.6$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_6.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=0.6): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_6.000000.jpg)  
 
-With $\lambda = 0.7$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_7.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=0.7): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_7.000000.jpg)  
 
-With $\lambda = 0.8$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_8.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=0.8): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_8.000000.jpg)  
 
-With $\lambda = 0.9$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_9.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=0.9): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_9.000000.jpg)  
 
-With $\lambda = 1.0$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_10.000000.jpg)  
+![](http://latex.codecogs.com/svg.latex?\\lambda=1.0): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_10.000000.jpg)  
 
