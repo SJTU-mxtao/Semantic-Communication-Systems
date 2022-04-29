@@ -8,10 +8,11 @@ pytorch implementation of "Deep Learning-Enabled Semantic Communication Systems 
 * [Torch 1.5.1]
 * [Numpy 1.21.2]
 
-## ["semantic_extraction"](semantic_extraction)
-The proposed method of the semantic extraction part in the paper. 
+## ["semantic_extraction"](./semantic_extraction)
+The proposed method of the semantic extraction part in the paper.   
 
-## ["Semantic System with DA"](Semantic System with DA) 
+
+## ["Semantic System with DA"](./Semantic System with DA) 
 The proposed method of the data adaptation part in the paper. 
 
 
