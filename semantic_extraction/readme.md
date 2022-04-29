@@ -29,7 +29,7 @@ $ python CIFAR.py
 
 ## Some Results
 
-With $\lambda = 0.1$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_1.000000.jpg)  
+With ![](http://latex.codecogs.com/svg.latex?\\lambda=0.1): ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_1.000000.jpg)  
 
 With $\lambda = 0.2$: ![image](./image_recover_combing/mnist_train_15_0.600000_lambda_2.000000.jpg)  
 
