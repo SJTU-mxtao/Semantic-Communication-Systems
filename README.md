@@ -11,5 +11,5 @@ pytorch implementation of "Deep Learning-Enabled Semantic Communication Systems 
 ## The folders
 ["semantic_extraction"](./semantic_extraction) and ["semantic_system_with_DA"](./semantic_system_with_DA) are the semantic extraction part and the data adaptation part of the proposed method in the paper.   
 
-
+The details are represented in the two sub-folders.
 
