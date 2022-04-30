@@ -66,6 +66,16 @@ $ python USPS_coder.py
 $ python STL10_coder.py
 ```
 
+## Results
+There are three columns in one group. The first column is the raw image, the second column is the image after DA, and the third column is the recovered data.
+
+[SVHN to MNIST](./results_show/sample-svhn-mnist-raw.png)  
+
+[USPS to MNIST](./results_show/sample-usps-mnist-raw.png)  
+
+[STL10 to CIFAR10](./results_show/sample-stl-cifar-raw.png)  
+
+
 ## Acknowledgement
 This part is based on [MNIST-to-SVHN and SVHN-to-MNIST](https://github.com/yunjey/mnist-svhn-transfer).
 
