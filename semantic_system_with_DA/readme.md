@@ -69,11 +69,17 @@ $ python STL10_coder.py
 ## Results
 There are three columns in one group. The first column is the raw image, the second column is the image after DA, and the third column is the recovered data.
 
-[SVHN to MNIST](./results_show/sample-svhn-mnist-raw.png)  
+SVHN to MNIST
 
-[USPS to MNIST](./results_show/sample-usps-mnist-raw.png)  
+![](./results_show/sample-svhn-mnist-raw.png)  
 
-[STL10 to CIFAR10](./results_show/sample-stl-cifar-raw.png)  
+USPS to MNIST
+
+![](./results_show/sample-usps-mnist-raw.png)  
+
+STL10 to CIFAR10
+
+![](./results_show/sample-stl-cifar-raw.png)  
 
 
 ## Acknowledgement
