@@ -92,3 +92,17 @@ This part is based on [MNIST-to-SVHN and SVHN-to-MNIST](https://github.com/yunje
 [2] [Semi-Supervised Learning with Generative Adversarial Networks](https://arxiv.org/abs/1606.01583)
 
 
+## Citation
+
+Please use the following BibTeX citation if you use this repository in your work:
+
+```
+@article{Deep_semantic_comm_2022,
+  title={Deep Learning-Enabled Semantic Communication Systems with Task-Unaware Transmitter and Dynamic Data},
+  author={Zhang, Hongwei and Shao, Shuo and Tao, Meixia and Bi, Xiaoyan and Letaief, Khaled B},
+  journal={arXiv preprint arXiv:2205.00271},
+  year={2022}
+}
+```
+
+
