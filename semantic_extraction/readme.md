@@ -8,23 +8,23 @@ The folder is for image classification task with the MNIST and CIFAR10 datasets.
 
 #### 1) For the MNIST dataset
 ```bash
-$ python MLP_MNIST_model.py
+$ python MLP_MNIST_model.py 
 ```
 
 #### 2) For the CIFAR10 dataset
 ```bash
-$ python googlenet_train.py
+$ python googlenet_train.py 
 ```
 
 ### Train the Semantic Extraction Part
 #### 1) For the MNIST dataset
 ```bash
-$ python MNIST.py
+$ python MNIST.py --alpha xx --pretrain_epoch xx --random_seed
 ```
 
 #### 2) For the CIFAR10 dataset
 ```bash
-$ python CIFAR.py
+$ python CIFAR.py --alpha xx --pretrain_epoch xx --random_seed
 ```
 
 ## Some Results
