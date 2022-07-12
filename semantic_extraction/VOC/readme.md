@@ -10,7 +10,7 @@ All pretrained models: [Dropbox](https://www.dropbox.com/sh/w3z9z8lqpi8b2w7/AAB0
 ## Quick Start
 ### Train the Semantic Extraction Part
 ```bash
-$ python main_semantic_encoding_diff_compre.py --model deeplabv3plus_mobilenet --gpu_id 0 --year 2012_aug --crop_val --lr 0.005 --crop_size 513 --batch_size 8 --output_stride 16
+$ python main_semantic_encoding_diff_compre.py --model deeplabv3plus_mobilenet --gpu_id 0 --year 2012_aug --crop_val --lr 0.005 --crop_size 513 --batch_size 8 --output_stride 16 --alpha xx --pretrain_epoch xx --random_seed
 ```
 
 ### Save the Visualized Results
