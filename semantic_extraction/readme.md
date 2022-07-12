@@ -19,12 +19,12 @@ $ python googlenet_train.py
 ### Train the Semantic Extraction Part
 #### 1) For the MNIST dataset
 ```bash
-$ python MNIST.py --alpha xx --pretrain_epoch xx --random_seed
+$ python MNIST.py --alpha xx --pretrain_epoch xx --random_seed xx
 ```
 
 #### 2) For the CIFAR10 dataset
 ```bash
-$ python CIFAR.py --alpha xx --pretrain_epoch xx --random_seed
+$ python CIFAR.py --alpha xx --pretrain_epoch xx --random_seed xx
 ```
 
 ## Some Results
