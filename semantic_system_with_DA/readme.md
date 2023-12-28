@@ -33,7 +33,7 @@ $ python main_stl_cifar.py --use_labels=True --use_reconst_loss=False
 ```
 
 ### The Scheme without DA
-# One benchmark, where the newly observed data is directly transmitted without retraining the coders.
+One benchmark, where the newly observed data is directly transmitted without retraining the coders.
 #### 1) SVHN
 ```bash
 $ python main_only_svhn.py --use_labels=True --use_reconst_loss=False
@@ -50,7 +50,7 @@ $ python main_only_stl.py --use_labels=True --use_reconst_loss=False
 ```
 
 ### The Retraining Scheme
-# Another benchmark, where the coders are retrained according to the newly observed data.
+Another benchmark, where the coders are retrained according to the newly observed data.
 #### 1) SVHN
 ```bash
 $ python SVHN_coder.py
