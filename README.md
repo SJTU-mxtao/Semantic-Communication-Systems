@@ -13,6 +13,11 @@ pytorch implementation of "Deep Learning-Enabled Semantic Communication Systems 
 
 The details are represented in the two sub-folders.
 
+## Other Instructions
+This is an example of semantic communication using a small-sized dataset based on MLP and CNN.
+If you require a more advanced neural network framework, we recommend using [another code repository based on Swin Transformer](https://github.com/SJTU-mxtao/semantic-communication-w-codebook)
+
+
 ## Citation
 
 Please use the following BibTeX citation if you use this repository in your work:
