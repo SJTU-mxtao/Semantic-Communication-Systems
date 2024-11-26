@@ -6,7 +6,7 @@ MLP_MNIST_model.py and MNIST.py have been updated on 2024.11.26
 
 ## Other Instructions
 This is an example of semantic communication using a small-sized dataset based on MLP and CNN.
-If you require a more advanced neural network framework, we recommend using [another code repository based on Swin Transformer](https://github.com/SJTU-mxtao/semantic-communication-w-codebook)
+**If you require a more advanced neural network framework or a system with better performance, we recommend using our [another code repository based on Swin Transformer](https://github.com/SJTU-mxtao/semantic-communication-w-codebook)**
 
 ## Notes
 The folder is for image classification task with the MNIST and CIFAR10 datasets. The image segmentation task with the PASCAL-VOC dataset is in the sub-folder [VOC](./VOC).
