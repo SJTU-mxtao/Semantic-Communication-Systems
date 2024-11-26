@@ -5,7 +5,7 @@ MLP_MNIST_model.py and MNIST.py have been updated on 2024.11.26
 
 
 ## Other Instructions
-This is an example of semantic communication on a small-size data set based on MLP and CNN.
+This is an example of semantic communication using a small-sized dataset based on MLP and CNN.
 If you require a more advanced neural network framework, we recommend using [another code repository based on Swin Transformer](https://github.com/SJTU-mxtao/semantic-communication-w-codebook)
 
 ## Notes
