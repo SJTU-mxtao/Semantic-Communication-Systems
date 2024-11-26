@@ -23,11 +23,14 @@ If you require a more advanced neural network framework, we recommend using [ano
 Please use the following BibTeX citation if you use this repository in your work:
 
 ```
-@article{Deep_semantic_comm_2022,
-  title={Deep Learning-Enabled Semantic Communication Systems with Task-Unaware Transmitter and Dynamic Data},
-  author={Zhang, Hongwei and Shao, Shuo and Tao, Meixia and Bi, Xiaoyan and Letaief, Khaled B},
-  journal={arXiv preprint arXiv:2205.00271},
-  year={2022}
-}
+@ARTICLE{9953099,
+  author={Zhang, Hongwei and Shao, Shuo and Tao, Meixia and Bi, Xiaoyan and Letaief, Khaled B.},
+  journal={IEEE Journal on Selected Areas in Communications}, 
+  title={Deep Learning-Enabled Semantic Communication Systems With Task-Unaware Transmitter and Dynamic Data}, 
+  year={2023},
+  volume={41},
+  number={1},
+  pages={170-185},
+  doi={10.1109/JSAC.2022.3221991}}
 ```
 
