@@ -1,7 +1,7 @@
 The semantic extraction part of the proposed method in "Deep Learning-Enabled Semantic Communication Systems with Task-Unaware Transmitter and Dynamic Data".
 
 ## Important Update
-MLP_MNIST_model.py and MNIST.py have been updated on 2024.11.26
+MLP_MNIST_model.py, MNIST.py, googlenet_train.py, and CIFAR.py have been updated on 2024.11.26.
 
 
 ## Other Instructions
