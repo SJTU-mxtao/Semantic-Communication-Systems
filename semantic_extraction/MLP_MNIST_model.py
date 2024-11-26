@@ -16,11 +16,14 @@ import matplotlib.pyplot as plt
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import pandas as pd
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+import pdb
 
 
 def data_transform(x):
     x = np.array(x, dtype='float32') / 255
-    x = (x - 0.5) / 0.5
+    # x = (x - 0.5) / 0.5
     x = x.reshape((-1,))
     x = torch.from_numpy(x)
     return x
@@ -40,22 +43,12 @@ class MLP(nn.Module):
         self.fc1 = nn.Linear(28 * 28, 500)
         self.fc2 = nn.Linear(500, 250)
         self.fc3 = nn.Linear(250, 125)
-        # self.fc4 = nn.Linear(125, 10)
         self.fc4 = nn.Linear(125, 10)
 
     def forward(self, x):
+        x = x.view(-1, 28 * 28)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-
-        aver_tmp = torch.mean(x, dim=0, out=None)
-        aver = torch.mean(aver_tmp, dim=0, out=None)
-
-        snr = 1
-        aver_noise = aver * (1 / 10 **(snr/10))
-        noise = torch.randn(size=x.shape) * aver_noise
-
-        x = x + noise
-
         x = F.relu(self.fc3(x))
         x = self.fc4(x)
         return x
@@ -65,15 +58,18 @@ mlp = MLP()
 
 criterion = nn.CrossEntropyLoss()
 
-# SGD or Adam
-optimizer = torch.optim.SGD(mlp.parameters(), 1e-3)
-
 losses = []
 acces = []
 eval_losses = []
 eval_acces = []
 
-for e in range(20):
+for e in range(10):
+    # SGD or Adam
+    if e < 7:
+        optimizer = torch.optim.Adam(mlp.parameters(), 1e-3)
+    else:
+        optimizer = torch.optim.Adam(mlp.parameters(), 1e-4)
+
     train_loss = 0
     train_acc = 0
     mlp.train()
@@ -122,7 +118,7 @@ for e in range(20):
                   eval_loss / len(test_data), eval_acc / len(test_data)))
 
 # save the model
-torch.save(mlp.state_dict(), 'MLP_MNIST.pkl')
+torch.save(mlp.state_dict(), 'saved_model/MLP_MNIST.pkl')
 
 # file = './results/MLP_MNIST_model/acc.csv'
 # data = pd.DataFrame(eval_acces)
