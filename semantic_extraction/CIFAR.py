@@ -6,11 +6,10 @@
 @file: CIFAR.py
 @time: 2022/3/14 12:24
 """
-import torch
 import os
-import imageio
-from models import get_classifier
-from torchvision.datasets import mnist
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# import imageio
+import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import pandas as pd
@@ -26,6 +25,8 @@ import torchvision.datasets as datasets
 import time
 import warnings
 import cv2
+import argparse
+
 
 warnings.filterwarnings("ignore")
 
@@ -35,15 +36,15 @@ def get_argparser():
     # Dataset Options
     parser.add_argument("--alpha", type=float, default=None,
                         help="parameter in loss function")
-    parser.add_argument("--pretrain_epoch", type=int, default=None,
-                        help='epochs of the pretraining stage')
+    # parser.add_argument("--pretrain_epoch", type=int, default=None,
+    #                     help='epochs of the pretraining stage')
     parser.add_argument("--random_seed", type=int, default=None,
                         help='seed of random sequence')
 
     return parser
 
 
-raw_dim = 28 * 28  # shape of the raw image
+raw_dim = 32 * 32  # shape of the raw image
 manualSeed = 999
 batch_size = 32
 image_size = 64
@@ -56,15 +57,15 @@ lr = 0.0002  # learning rate
 beta1 = 0.5
 ngpu = 4
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cuda:1')
 print('device:', device)
 
 
 def data_tf(x):
     x = x.resize((96, 96), 2)  # shape of x: (96, 96, 3)
     x = np.array(x, dtype='float32') / 255
-    x = (x - 0.5) / 0.5
+    # x = (x - 0.5) / 0.5
     x = x.transpose((2, 0, 1))
     x = torch.from_numpy(x)
     return x
@@ -199,23 +200,31 @@ def to_data(x):
 
 # for rate in range(50):
 for lambda_var in range(1):
+
+    # load data
+    train_set = datasets.CIFAR10('./data', train=True, transform=data_tf, download=True)
+    train_data = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True)
+    test_set = datasets.CIFAR10('./data', train=False, transform=data_tf, download=True)
+    test_data = torch.utils.data.DataLoader(test_set, batch_size=64, shuffle=False)
+
     opts = get_argparser().parse_args()
     torch.manual_seed(opts.random_seed)
 
     # classifier = get_classifier('googlenet')
     classifier = googlenet(3, 10)
-    classifier.load_state_dict(torch.load('google_net.pkl'))  # load the trained model
+    classifier.load_state_dict(torch.load('saved_model/google_net.pkl'))  # load the trained model
     classifier.to(device)
     # SGD or Adam
-    optimizer_classifier = torch.optim.SGD(classifier.parameters(), lr=0.01)
+    optimizer_classifier = torch.optim.SGD(classifier.parameters(), lr=0.0001)
     criterion_classifier = nn.CrossEntropyLoss()  # loss of classifier
-    for rate in range(10):
+    for rate in range(5):
         compression_rate = min((rate + 1) * 0.1, 1)
         # channel = max(np.sqrt(32 * (1 - compression_rate) / 2), 1)
         channel = max(np.sqrt(96 * (1 - compression_rate) / 3), 1)
         channel = int(channel)
         print('channel:', channel)
-        dimension = int(96 * 96 * compression_rate)
+
+        dimension = int(96 * 96 * 3 * compression_rate / (8 * 8))
 
         lambda_tmp = 0.5
         size_recover = int(96 * np.sqrt(compression_rate))
@@ -225,45 +234,61 @@ for lambda_var in range(1):
 
 
         class RED_CNN(nn.Module):
+            # def __init__(self, out_ch=16):
             def __init__(self, out_ch=16):
                 # coders and AWGN channel
                 super(RED_CNN, self).__init__()
-                # channel = 2
-                self.conv1 = nn.Conv2d(3, out_ch, kernel_size=channel, stride=1, padding=0)
-                self.pool = nn.MaxPool2d(2, stride=2, return_indices=True)
+                self.conv1 = nn.Conv2d(3, 64, kernel_size=5, stride=2, padding=0)
+                self.conv2 = nn.Conv2d(64, 128, kernel_size=5, stride=2, padding=0)
+                self.conv3 = nn.Conv2d(128, 256, kernel_size=4, stride=1, padding=0)
+                self.conv4 = nn.Conv2d(256, 384, kernel_size=5, stride=1, padding=0)
+                self.conv5 = nn.Conv2d(384, 512, kernel_size=5, stride=1, padding=0)
+                self.conv6 = nn.Conv2d(512, dimension, kernel_size=3, stride=1, padding=0)
 
-                self.conv2 = nn.Conv2d(out_ch, 3, kernel_size=channel, stride=1, padding=0)
-                self.conv3 = nn.Conv2d(out_ch, out_ch, kernel_size=channel, stride=1, padding=0)
-                self.conv4 = nn.Conv2d(out_ch, out_ch, kernel_size=channel, stride=1, padding=0)
-                self.conv5 = nn.Conv2d(out_ch, out_ch, kernel_size=channel, stride=1, padding=0)
+                self.tconv1 = nn.ConvTranspose2d(dimension, 512, kernel_size=3, stride=1, padding=0)
+                self.tconv2 = nn.ConvTranspose2d(512, 384, kernel_size=5, stride=1, padding=0)
+                self.tconv3 = nn.ConvTranspose2d(384, 256, kernel_size=5, stride=1, padding=0)
+                self.tconv4 = nn.ConvTranspose2d(256, 128, kernel_size=5, stride=1, padding=0)
+                self.tconv5 = nn.ConvTranspose2d(128, 64, kernel_size=5, stride=2, padding=0)
+                self.tconv6 = nn.ConvTranspose2d(64, 3, kernel_size=4, stride=2, padding=0)
 
-                self.tconv1 = nn.ConvTranspose2d(out_ch, out_ch, kernel_size=channel, stride=1, padding=0)
-                self.unpool = nn.MaxUnpool2d(2, stride=2)
-                self.tconv2 = nn.ConvTranspose2d(out_ch, out_ch, kernel_size=channel, stride=1, padding=0)
-                self.tconv3 = nn.ConvTranspose2d(out_ch, out_ch, kernel_size=channel, stride=1, padding=0)
-                self.tconv4 = nn.ConvTranspose2d(3, out_ch, kernel_size=channel, stride=1, padding=0)
-                self.tconv5 = nn.ConvTranspose2d(out_ch, 3, kernel_size=channel, stride=1, padding=0)
+                # self.conv1 = nn.Conv2d(3, 32, kernel_size=5, stride=2, padding=0)
+                # self.conv2 = nn.Conv2d(32, 64, kernel_size=5, stride=2, padding=0)
+                # self.conv3 = nn.Conv2d(64, 64, kernel_size=4, stride=1, padding=0)
+                # self.conv4 = nn.Conv2d(64, 96, kernel_size=5, stride=1, padding=0)
+                # self.conv5 = nn.Conv2d(96, 128, kernel_size=5, stride=1, padding=0)
+                # self.conv6 = nn.Conv2d(128, dimension, kernel_size=3, stride=1, padding=0)
+
+                # self.tconv1 = nn.ConvTranspose2d(dimension, 128, kernel_size=3, stride=1, padding=0)
+                # self.tconv2 = nn.ConvTranspose2d(128, 96, kernel_size=5, stride=1, padding=0)
+                # self.tconv3 = nn.ConvTranspose2d(96, 64, kernel_size=5, stride=1, padding=0)
+                # self.tconv4 = nn.ConvTranspose2d(64, 64, kernel_size=5, stride=1, padding=0)
+                # self.tconv5 = nn.ConvTranspose2d(64, 32, kernel_size=5, stride=2, padding=0)
+                # self.tconv6 = nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=0)
 
                 # self.relu = nn.ReLU()
 
             def forward(self, x):
                 # encoder
-                out = self.conv1(x)
-                out = self.conv2(out)
-                # out = self.conv3(out)
+                out = F.relu(self.conv1(x))
+                out = F.relu(self.conv2(out))
+                out = F.relu(self.conv3(out))
+                out = F.relu(self.conv4(out))
+                out = F.relu(self.conv5(out))
+                out = F.relu(self.conv6(out))
 
-                # scale and quantize
-                out = out.detach().cpu()
-                out_max = torch.max(out)
-                out_tmp = copy.deepcopy(torch.div(out, out_max))
+                # # scale and quantize
+                # out = out.detach().cpu()
+                # out_max = torch.max(out)
+                # out_tmp = copy.deepcopy(torch.div(out, out_max))
 
-                # quantize
-                out_tmp = copy.deepcopy(torch.mul(out_tmp, 256))
-                out_tmp = copy.deepcopy(out_tmp.clone().type(torch.int))
-                out_tmp = copy.deepcopy(out_tmp.clone().type(torch.float32))
-                out_tmp = copy.deepcopy(torch.div(out_tmp, 256))
+                # # quantize
+                # out_tmp = copy.deepcopy(torch.mul(out_tmp, 256))
+                # out_tmp = copy.deepcopy(out_tmp.clone().type(torch.int))
+                # out_tmp = copy.deepcopy(out_tmp.clone().type(torch.float32))
+                # out_tmp = copy.deepcopy(torch.div(out_tmp, 256))
 
-                out = copy.deepcopy(torch.mul(out_tmp, out_max))
+                # out = copy.deepcopy(torch.mul(out_tmp, out_max))
 
                 # add noise
                 out_tmp = out.detach().cpu().numpy()
@@ -275,29 +300,30 @@ for lambda_var in range(1):
                 aver_noise = aver / 10 ** (snr / 10)
                 noise = torch.randn(size=out.shape) * np.sqrt(aver_noise)
                 noise = noise.to(device)
-
-                out = out + noise
-                # out = torch.from_numpy(out)
-                # out = out.to(torch.float32)
-                # out = out.to(device)
-
-                # print('out_after:', out.shape)
+                
+                out = torch.add(out, noise)
 
                 # decoder
-
-                # print('out_4:', out.shape)
-                # out = self.tconv3(out)
-                out = self.tconv4(out)
-                out = self.tconv5(out)
-                # print('out_5:', out.shape)
-                # out += residual_1
-                # out = self.relu(out)
-                # print('shape of out:', out.size())
+                out = F.relu(self.tconv1(out))
+                out = F.relu(self.tconv2(out))
+                out = F.relu(self.tconv3(out))
+                out = F.relu(self.tconv4(out))
+                out = F.relu(self.tconv5(out))
+                out = F.relu(self.tconv6(out))
                 return out
 
 
         mlp_encoder = RED_CNN().to(device)
-        # mlp_mnist = MLP_MNIST()
+        # load the MNIST coder
+        model_path = "./saved_model/CIFAR_encoder_" + str(compression_rate) + ".pkl"
+        pre_model_exist = os.path.isfile(model_path)  # if the pre-trained model exists
+
+        if pre_model_exist:
+            print('load model parameters ...')
+            mlp_encoder.load_state_dict(torch.load(model_path))
+            
+        else:
+            print('No Well-Trained Model!')
 
         transform = transforms.Compose([
             transforms.Resize(image_size),
@@ -312,35 +338,26 @@ for lambda_var in range(1):
         # train_data = DataLoader(trainset, batch_size=32, shuffle=True)
         # test_data = DataLoader(testset, batch_size=32, shuffle=False)
 
-        # load data
-        train_set = datasets.CIFAR10('./data', train=True, transform=data_tf, download=True)
-        train_data = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True)
-        test_set = datasets.CIFAR10('./data', train=False, transform=data_tf, download=True)
-        test_data = torch.utils.data.DataLoader(test_set, batch_size=64, shuffle=False)
-
 
         def criterion(x_in, y_in, raw_in):
             out_tmp1 = nn.CrossEntropyLoss()
             out_tmp2 = nn.MSELoss()
             z_in = classifier(x_in)
-            mse_in = lambda2 * out_tmp2(x_in, raw_in)
-            # loss_channel = lambda1 * out_tmp1(z_in, y_in) + 5 * lambda2 * mse_in
-            loss_channel = opts.alpha * lambda1 * out_tmp1(z_in, y_in) + 5 * lambda2 * mse_in
-            # loss_channel = out_tmp2(x_in, raw_in)
+            # mse_in = lambda2 * out_tmp2(x_in, raw_in)
+            # # loss_channel = lambda1 * out_tmp1(z_in, y_in) + 5 * lambda2 * mse_in
+            # loss_channel = opts.alpha * lambda1 * out_tmp1(z_in, y_in) + 5 * lambda2 * mse_in
+
+            loss_channel = out_tmp2(x_in, raw_in)
             return loss_channel
 
 
-        def criterion_pretraining(x_in, y_in, raw_in):
-            # out_tmp1 = nn.CrossEntropyLoss()
-            out_tmp2 = nn.MSELoss()
-            z_in = mlp_mnist(x_in)
-            mse_in = lambda2 * out_tmp2(x_in, raw_in)
-            loss_channel = mse_in
-            return loss_channel
-
-
-        # SGD or Adam
-        optimizer = torch.optim.SGD(mlp_encoder.parameters(), 1e-3)
+        # def criterion_pretraining(x_in, y_in, raw_in):
+        #     # out_tmp1 = nn.CrossEntropyLoss()
+        #     out_tmp2 = nn.MSELoss()
+        #     z_in = mlp_mnist(x_in)
+        #     mse_in = lambda2 * out_tmp2(x_in, raw_in)
+        #     loss_channel = mse_in
+        #     return loss_channel
 
         losses = []
         acces = []
@@ -352,59 +369,18 @@ for lambda_var in range(1):
 
         print('Training Start')
         print('Compression Rate:', compression_rate)
-        epoch_len = 100
+        epoch_len = 20
         out = None
 
-        for e in range(opts.pretain_epoch):
-            train_loss = 0
-            train_acc = 0
-            psnr_aver = 0
-            mlp_encoder.train()
-            counter = 0
-            for im, label in train_data:
-                im = Variable(im)
-                label = Variable(label)
-
-                im = im.to(device)
-                label = label.to(device)
-                # classifier = classifier.train()
-
-                out = mlp_encoder(im)
-                # print('coding time:', time.process_time())
-
-                out_mnist = classifier(out)
-                out_real = classifier(im)
-
-                loss = criterion(out, label, im)
-                cr1 = nn.MSELoss()
-                mse = cr1(out, im)
-                out_np = out.detach().cpu().numpy()
-
-                psnr = 10 * np.log10(1 / mse.detach().cpu().numpy())
-                psnr_aver += psnr
-
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                # print('optimization time:', time.process_time(), 'counter', counter)
-
-                counter += 1
-                if counter >= 32:
-                    break
-
-            # print('*' * 30)
-
-            # for ii in range(len(out)):
-            #     # image_recover = data_inv_transform(out[ii])
-            #     pil_img = Image.fromarray(np.uint8(out))
-            #     pil_img.save(
-            #         "/CIFAR/image_recover_combing/mnist_train_%d_%f_lambda_%f.jpg" % (ii, compression_rate, lambda1))
-
-            # if e % 10 == 0:
-            #     torch.save(classifier.state_dict(),
-            #                'google_net_final-lambda-%.2f-compre-%.2f.pkl' % (lambda1, compression_rate))
-
         for e in range(epoch_len):
+            # SGD or Adam
+            if e < 5:
+                optimizer = torch.optim.Adam(mlp_encoder.parameters(), 1e-3)
+            elif e < 10:
+                optimizer = torch.optim.Adam(mlp_encoder.parameters(), 1e-4)
+            else:
+                optimizer = torch.optim.Adam(mlp_encoder.parameters(), 2e-5)
+
             train_loss = 0
             train_acc = 0
             psnr_aver = 0
@@ -429,7 +405,7 @@ for lambda_var in range(1):
                 mse = cr1(out, im)
                 out_np = out.detach().cpu().numpy()
 
-                psnr = 10 * np.log10(1 / mse.detach().cpu().numpy())
+                psnr = 10 * (np.log(1. / mse.item()) / np.log(10))
                 psnr_aver += psnr
 
                 optimizer.zero_grad()
@@ -438,8 +414,8 @@ for lambda_var in range(1):
                 # print('optimization time:', time.process_time(), 'counter', counter)
 
                 counter += 1
-                if counter >= 32:
-                    break
+                # if counter >= 32:
+                #     break
 
                 train_loss += loss.item()
 
@@ -455,36 +431,32 @@ for lambda_var in range(1):
                     out_data = to_data(out)
                     merged = merge_images(im_data, out_data)
 
-                    # print('lambda 1:', lambda1)
-                    # save the images
-                    path = os.path.join('images/sample-epoch-%d-lambda-%.2f-compre-%.2f.png' % (
-                        e, lambda1, compression_rate))
-                    # scipy.misc.imsave(path, merged)
-                    imageio.imwrite(path, merged)
-                    print('saved %s' % path)
 
-                    path = os.path.join('images/sample-epoch-%d-lambda-%.2f-compre-%.2f-2.png' % (
-                        e, lambda1, compression_rate))
-                    # scipy.misc.imsave(path, merged)
-                    imageio.imwrite(path, merged2)
-                    print('saved %s' % path)
-
-                    # path = os.path.join('images/im-epoch-%d-lambda-%d-compre-%d.png' % (
+                    # # save the images
+                    # path = os.path.join('images/sample-epoch-%d-lambda-%.2f-compre-%.2f.png' % (
                     #     e, lambda1, compression_rate))
                     # # scipy.misc.imsave(path, merged)
-                    # cv2.imwrite(path, im_data[0].transpose(1, 2, 0))
-                    #
-                    # path = os.path.join('images/out-epoch-%d-lambda-%d-compre-%d.png' % (
+                    # imageio.imwrite(path, merged)
+                    # print('saved %s' % path)
+
+                    # path = os.path.join('images/sample-epoch-%d-lambda-%.2f-compre-%.2f-2.png' % (
                     #     e, lambda1, compression_rate))
                     # # scipy.misc.imsave(path, merged)
-                    # cv2.imwrite(path, out_data[0].transpose(1, 2, 0))
+                    # imageio.imwrite(path, merged2)
+                    # print('saved %s' % path)
+
 
             losses.append(train_loss / counter)
             acces.append(train_acc / counter)
             psnr_all.append(psnr_aver / counter)
 
+            train_acc = train_acc / counter
+            train_loss = train_loss / counter
+            psnr_aver = psnr_aver / counter
+
             eval_loss = 0
             eval_acc = 0
+            eval_psnr = 0
             mlp_encoder.eval()
             counter = 0
             for im, label in test_data:
@@ -508,14 +480,18 @@ for lambda_var in range(1):
                 acc = num_correct / im.shape[0]
                 eval_acc += acc
 
-                counter += 1
-                if counter >= 32:
-                    break
+                psnr = 10 * (np.log(1. / mse.item()) / np.log(10))
+                eval_psnr += psnr
 
-            print('epoch: {}, Acc Semantic: {:.6f}, '
-                  'PSNR Semantic: {:.6f}'
-                  .format(e, eval_acc / counter,
-                          psnr_aver / counter))
+                counter += 1
+                # if counter >= 32:
+                #     break
+
+            print('epoch: {}, Test Acc: {:.6f}, Test Loss: {:.6f},'
+                  'Test PSNR: {:.6f}, Train Acc: {:.6f}, Train Loss: {:.6f}, Train PSNR: {:.6f}'
+                  .format(e, eval_acc / counter, eval_loss / counter,
+                          eval_psnr / counter, train_acc, train_loss,
+                          psnr_aver))
             # print('*' * 30)
 
             # for ii in range(len(out)):
@@ -528,24 +504,24 @@ for lambda_var in range(1):
             #     torch.save(classifier.state_dict(),
             #                'google_net_final-lambda-%.2f-compre-%.2f.pkl' % (lambda1, compression_rate))
 
-        # save the model and results
-        # torch.save(mlp_encoder.state_dict(), ('MLP_MNIST_encoder_combining_%f.pkl' % compression_rate))
+            # save the model and results
+            torch.save(mlp_encoder.state_dict(), ('saved_model/CIFAR_encoder_%f.pkl' % compression_rate))
 
-        # save the results
-        file = ('./CIFAR/MLP_sem_CIFAR/acc_semantic_combining_%.2f_lambda_%.2f.csv' % (
-            compression_rate, lambda1))
-        data = pd.DataFrame(acces)
-        data.to_csv(file, index=False)
+            # save the results
+            file = ('./results/MLP_sem_CIFAR/acc_semantic_combining_%.2f_lambda_%.2f.csv' % (
+                compression_rate, lambda1))
+            data = pd.DataFrame(acces)
+            data.to_csv(file, index=False)
 
-        eval_psnr = np.array(psnr_all)
-        file = ('./CIFAR/MLP_sem_CIFAR/psnr_semantic_combining_%.2f_lambda_%.2f.csv' % (
-            compression_rate, lambda1))
-        data = pd.DataFrame(eval_psnr)
-        data.to_csv(file, index=False)
+            eval_psnr = np.array(psnr_all)
+            file = ('./results/MLP_sem_CIFAR/psnr_semantic_combining_%.2f_lambda_%.2f.csv' % (
+                compression_rate, lambda1))
+            data = pd.DataFrame(eval_psnr)
+            data.to_csv(file, index=False)
 
-        # save the recovered image
-        # for ii in range(len(out)):
-        #     # image_recover = data_inv_transform(out[ii])
-        #     pil_img = Image.fromarray(np.uint8(out))
-        #     pil_img.save(
-        #         "/CIFAR/image_recover_combing/mnist_train_%d_%f_lambda_%f.jpg" % (ii, compression_rate, lambda1))
+            # save the recovered image
+            # for ii in range(len(out)):
+            #     # image_recover = data_inv_transform(out[ii])
+            #     pil_img = Image.fromarray(np.uint8(out))
+            #     pil_img.save(
+            #         "/image_recover_combing/cifar/mnist_train_%d_%f_lambda_%f.jpg" % (ii, compression_rate, lambda1))

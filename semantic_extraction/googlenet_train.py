@@ -12,11 +12,14 @@ import sys
 
 sys.path.append("...")
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import numpy as np
 import torch
 from torch.autograd import Variable
 from torch import nn
 from torchvision.datasets import CIFAR10
+
 
 
 # define a layer
@@ -136,7 +139,7 @@ print('output: {}'.format(test_y.shape))
 def data_tf(x):
     x = x.resize((96, 96), 2)  # shape of x: (96, 96, 3)
     x = np.array(x, dtype='float32') / 255
-    x = (x - 0.5) / 0.5
+    # x = (x - 0.5) / 0.5
     x = x.transpose((2, 0, 1))
     x = torch.from_numpy(x)
     return x
@@ -148,7 +151,7 @@ test_set = CIFAR10('./data', train=False, transform=data_tf, download=True)
 test_data = torch.utils.data.DataLoader(test_set, batch_size=128, shuffle=False)
 
 net = googlenet(3, 10)
-optimizer = torch.optim.SGD(net.parameters(), lr=0.01)
+# optimizer = torch.optim.SGD(net.parameters(), lr=0.01)
 criterion = nn.CrossEntropyLoss()
 
 from datetime import datetime
@@ -161,11 +164,18 @@ def get_acc(output, label):
     return num_correct / total
 
 
-def train(net, train_data, valid_data, num_epochs, optimizer, criterion):
+def train(net, train_data, valid_data, num_epochs, criterion):
     if torch.cuda.is_available():
         net = net.cuda()
     prev_time = datetime.now()
     for epoch in range(num_epochs):
+        if epoch < 20:
+            optimizer = torch.optim.Adam(net.parameters(), lr=0.01)
+        elif epoch < 25:
+            optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
+        else:
+            optimizer = torch.optim.Adam(net.parameters(), lr=0.0001)
+
         train_loss = 0
         train_acc = 0
         net = net.train()
@@ -217,9 +227,9 @@ def train(net, train_data, valid_data, num_epochs, optimizer, criterion):
 
         prev_time = cur_time
         print(epoch_str + time_str)
-        # torch.save(net.state_dict(), 'google_net.pkl')
+        torch.save(net.state_dict(), 'saved_model/google_net.pkl')
 
 
-train(net, train_data, test_data, 20, optimizer, criterion)
+train(net, train_data, test_data, 30, criterion)
 
 
