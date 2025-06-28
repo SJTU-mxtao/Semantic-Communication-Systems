@@ -16,8 +16,9 @@ The details are represented in the two sub-folders.
 ## Other Instructions
 This is an example of semantic communication using a small-sized dataset based on MLP and CNN.
 ```diff
-**If you require a more advanced neural network framework or a system with better performance, we recommend using our [another code repository based on Swin Transformer](https://github.com/SJTU-mxtao/semantic-communication-w-codebook)**
+- If you require a more advanced neural network framework or a system with better performance, we recommend using our [another code repository based on Swin Transformer](https://github.com/SJTU-mxtao/semantic-communication-w-codebook)
 ```
+
 
 ## Citation
 
